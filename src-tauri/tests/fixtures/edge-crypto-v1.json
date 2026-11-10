@@ -1,0 +1,63 @@
+{
+  "description": "Synthetic offline interoperability vectors for the observed dx150-edge-v1 protocol. Generated without executing upstream JavaScript.",
+  "source_file": "work/edge-api-crypto.js",
+  "inputs": {
+    "shared_secret_hex": "202122232425262728292a2b2c2d2e2f303132333435363738393a3b3c3d3e3f",
+    "salt_hex": "000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f",
+    "scope": "playback",
+    "site": "fixture.example",
+    "kid": "test-kid",
+    "sid": "0123456789abcdef0123456789abcdef",
+    "server_time": 1700000000,
+    "expires_at": 1700000300,
+    "seq": 1,
+    "ts": 1700000000,
+    "info": "dx150-edge-v1\nplayback\nfixture.example\ntest-kid\n0123456789abcdef0123456789abcdef",
+    "nonce_hex": "000000000000000000000001"
+  },
+  "request": {
+    "key_info": "dx150-edge-v1\nplayback\nfixture.example\ntest-kid\n0123456789abcdef0123456789abcdef\nreq",
+    "key_hex": "59dd816a52694a35615829c7efe9ed6fe8ce2fc95cb3c66570b9e2468230a01e",
+    "aad": "dx150-edge-v1\nplayback\nfixture.example\ntest-kid\n0123456789abcdef0123456789abcdef\nreq\n1\n1700000000",
+    "plaintext": "{\"request\":{\"method\":\"GET\",\"path\":\"/api/videos/123/play?ep=1&page_texts=0\",\"body\":\"\",\"content_type\":\"\"}}",
+    "ciphertext_base64url": "NgczkQOTADNUVWe214dUiSklwk2hc4A0NKRLv5uQ-temDBtKT1p5tOOlFKlMtvpjdQ9KICpgCS1oKNe2DQK0sr7a3_R5Ub96SyspQ28YIyHHLJlrWFnPxIVBQjoXzECKlaue_l3MBsDg3AnhF5u_ENfYG_GkxEiZ",
+    "ciphertext_with_tag_hex": "3607339103930033545567b6d78754892925c24da173803434a44bbf9b90fad7a60c1b4a4f5a79b4e3a514a94cb6fa63750f4a202a60092d6828d7b60d02b4b2bedadff47951bf7a4b2b29436f182321c72c996b5859cfc48541423a17cc408a95ab9efe5dcc06c0e0dc09e1179bbf10d7d81bf1a4c44899",
+    "outer": {
+      "v": 1,
+      "type": "call",
+      "kid": "test-kid",
+      "sid": "0123456789abcdef0123456789abcdef",
+      "seq": 1,
+      "ts": 1700000000,
+      "ciphertext": "NgczkQOTADNUVWe214dUiSklwk2hc4A0NKRLv5uQ-temDBtKT1p5tOOlFKlMtvpjdQ9KICpgCS1oKNe2DQK0sr7a3_R5Ub96SyspQ28YIyHHLJlrWFnPxIVBQjoXzECKlaue_l3MBsDg3AnhF5u_ENfYG_GkxEiZ"
+    }
+  },
+  "response": {
+    "key_info": "dx150-edge-v1\nplayback\nfixture.example\ntest-kid\n0123456789abcdef0123456789abcdef\nres",
+    "key_hex": "bfd91868d0d2f2b11da748271beee873f74ce10aa1485056034594105cb405af",
+    "aad": "dx150-edge-v1\nplayback\nfixture.example\ntest-kid\n0123456789abcdef0123456789abcdef\nres\n1\n1700000000",
+    "plaintext": "{\"status\":200,\"headers\":{\"content-type\":[\"application/json\"]},\"body\":\"eyJzdGF0dXMiOjEsImRhdGEiOnsidmlkZW9fdXJsIjoiaHR0cHM6Ly9tZWRpYS5maXh0dXJlLmludmFsaWQvbGlzdC5tM3U4In19\"}",
+    "ciphertext_base64url": "ZMRNOwBNom2ByyzBvRJnu_yIdLFiM4-FKyeiu6ycOgXgncetfPjhRtU2XCCLTQpi8BQYSrA_3aYtA95fbTceMX08JSYlVQ9gmUkqRYv7BrvgkIeukp--t1EfCOQ9oqse254w4Rcb_2C-97q3yEdV0hsY2BxKd_jOa5B7Hl_vp92zNtw7rqqjf5PV386GeeH8caSpsZ-ryT27eziIDEAa8DPrX-oeiKexCnIBDQnuLtTQ279on3sv_MQFjOs",
+    "ciphertext_with_tag_hex": "64c44d3b004da26d81cb2cc1bd1267bbfc8874b162338f852b27a2bbac9c3a05e09dc7ad7cf8e146d5365c208b4d0a62f014184ab03fdda62d03de5f6d371e317d3c252625550f6099492a458bfb06bbe09087ae929fbeb7511f08e43da2ab1edb9e30e1171bff60bef7bab7c84755d21b18d81c4a77f8ce6b907b1e5fefa7ddb336dc3baeaaa37f93d5dfce8679e1fc71a4a9b19fabc93dbb7b38880c401af033eb5fea1e88a7b10a72010d09ee2ed4d0dbbf689f7b2ffcc4058ceb",
+    "body_json": "{\"status\":1,\"data\":{\"video_url\":\"https://media.fixture.invalid/list.m3u8\"}}",
+    "body_base64": "eyJzdGF0dXMiOjEsImRhdGEiOnsidmlkZW9fdXJsIjoiaHR0cHM6Ly9tZWRpYS5maXh0dXJlLmludmFsaWQvbGlzdC5tM3U4In19",
+    "outer": {
+      "v": 1,
+      "type": "result",
+      "kid": "test-kid",
+      "sid": "0123456789abcdef0123456789abcdef",
+      "seq": 1,
+      "ts": 1700000000,
+      "ciphertext": "ZMRNOwBNom2ByyzBvRJnu_yIdLFiM4-FKyeiu6ycOgXgncetfPjhRtU2XCCLTQpi8BQYSrA_3aYtA95fbTceMX08JSYlVQ9gmUkqRYv7BrvgkIeukp--t1EfCOQ9oqse254w4Rcb_2C-97q3yEdV0hsY2BxKd_jOa5B7Hl_vp92zNtw7rqqjf5PV386GeeH8caSpsZ-ryT27eziIDEAa8DPrX-oeiKexCnIBDQnuLtTQ279on3sv_MQFjOs"
+    }
+  },
+  "verification": {
+    "hkdf_webcrypto_matches_node_crypto": true,
+    "aes_gcm_webcrypto_matches_node_crypto": true,
+    "both_directions_roundtrip": true,
+    "modified_ciphertext_rejected": true,
+    "modified_aad_rejected": true,
+    "request_response_keys_distinct": true,
+    "wrong_direction_key_rejected": true
+  }
+}

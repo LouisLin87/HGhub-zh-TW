@@ -1,0 +1,15 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "bundle": {
+    "licenseFile": "../LICENSE",
+    "resources": {
+      "../LICENSE": "LICENSE"
+    },
+    "windows": {
+      "nsis": {
+        "languages": ["TradChinese"],
+        "installMode": "currentUser"
+      }
+    }
+  }
+}

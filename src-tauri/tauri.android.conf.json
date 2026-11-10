@@ -1,0 +1,10 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "HGhub 測試版",
+  "identifier": "com.hghub.huangguo.local",
+  "bundle": {
+    "android": {
+      "minSdkVersion": 24
+    }
+  }
+}
