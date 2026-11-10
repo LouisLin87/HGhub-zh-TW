@@ -1,0 +1,98 @@
+# 手動觸發，建置結果保存為附件；版本發佈由維護者另行操作。
+name: 手動 macOS 建置
+
+on:
+  workflow_dispatch: null
+
+jobs:
+  macos:
+    name: macOS (${{ matrix.name }})
+    runs-on: macos-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - target: aarch64-apple-darwin
+            name: Apple Silicon (arm64)
+            arch: arm64
+          - target: x86_64-apple-darwin
+            name: Intel (x64)
+            arch: x64
+          - target: universal-apple-darwin
+            name: Universal (通用版)
+            arch: universal
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: 對齊版本號
+        id: ver
+        shell: bash
+        run: |
+          if [[ "$GITHUB_REF" == refs/tags/v* ]]; then
+            V="${GITHUB_REF_NAME#v}"
+          else
+            V="$(node -p "require('./src-tauri/tauri.conf.json').version")"
+          fi
+          echo "version=$V" >> "$GITHUB_OUTPUT"
+          node -e "const fs=require('fs');for(const p of ['src-tauri/tauri.conf.json','package.json']){const j=JSON.parse(fs.readFileSync(p));j.version=process.argv[1];fs.writeFileSync(p,JSON.stringify(j,null,2)+'\n')}" "$V"
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: aarch64-apple-darwin,x86_64-apple-darwin
+
+      - uses: swatinem/rust-cache@v2
+        with:
+          workspaces: src-tauri -> target
+          key: macos-${{ matrix.target }}
+
+      - name: 安裝前端依賴
+        run: pnpm install --frozen-lockfile
+
+      - name: 構建 macOS 應用 (DMG + APP)
+        run: |
+          pnpm tauri build --config src-tauri/tauri.macos.conf.json --target ${{ matrix.target }}
+
+      - name: 整理構建產物
+        shell: bash
+        run: |
+          V="${{ steps.ver.outputs.version }}"
+          mkdir -p artifacts
+
+          # 收集 dmg 安裝包
+          found_dmg=0
+          for f in $(find src-tauri/target -name '*.dmg'); do
+            echo "發現 DMG: $f"
+            cp "$f" "artifacts/HGhub_${V}_${{ matrix.arch }}.dmg"
+            found_dmg=1
+          done
+
+          # 打包 .app 綠色壓縮包（便於不需要 DMG 安裝的使用者直接拖拽）
+          for app in $(find src-tauri/target -name 'HGhub.app' -type d); do
+            echo "發現 APP: $app"
+            tar -czf "artifacts/HGhub_${V}_${{ matrix.arch }}.app.tar.gz" -C "$(dirname "$app")" "HGhub.app"
+          done
+
+          ls -lh artifacts/
+          if [ "$found_dmg" -eq 0 ]; then
+            echo "::error::未找到 DMG 構建產物"
+            exit 1
+          fi
+
+      - name: 上傳構建產物
+        uses: actions/upload-artifact@v4
+        with:
+          name: HGhub-macOS-${{ matrix.arch }}
+          path: artifacts/*
+          if-no-files-found: error
+permissions:
+  contents: read

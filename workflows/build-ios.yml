@@ -1,0 +1,83 @@
+# 手動觸發，建置結果保存為附件；版本發佈由維護者另行操作。
+name: 手動 iOS IPA 建置（未簽署）
+
+on:
+  workflow_dispatch: null
+
+jobs:
+  ios:
+    name: iOS Build (IPA)
+    runs-on: macos-latest
+    permissions:
+      contents: read
+    env:
+      APPLE_DEVELOPMENT_TEAM: "ABCDE12345"
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: 對齊版本號
+        id: ver
+        shell: bash
+        run: |
+          if [[ "$GITHUB_REF" == refs/tags/v* ]]; then
+            V="${GITHUB_REF_NAME#v}"
+          else
+            V="$(node -p "require('./src-tauri/tauri.conf.json').version")"
+          fi
+          echo "version=$V" >> "$GITHUB_OUTPUT"
+          node -e "const fs=require('fs');for(const p of ['src-tauri/tauri.conf.json','package.json']){const j=JSON.parse(fs.readFileSync(p));j.version=process.argv[1];fs.writeFileSync(p,JSON.stringify(j,null,2)+'\n')}" "$V"
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: aarch64-apple-ios,aarch64-apple-ios-sim
+
+      - uses: swatinem/rust-cache@v2
+        with:
+          workspaces: src-tauri -> target
+          key: ios-build
+
+      - name: 安裝依賴
+        run: pnpm install --frozen-lockfile
+
+      - name: 初始化 iOS Xcode 工程
+        run: |
+          pnpm tauri ios init --ci
+          # 確保 iOS Info.plist（含 ~iphone / ~ipad 變體）支援橫豎屏切換及 ATS
+          for plist in $(find src-tauri/gen/apple -name "Info.plist" 2>/dev/null); do
+            for key in "UISupportedInterfaceOrientations" "UISupportedInterfaceOrientations~iphone" "UISupportedInterfaceOrientations~ipad"; do
+              /usr/libexec/PlistBuddy -c "Delete :${key}" "$plist" 2>/dev/null || true
+              /usr/libexec/PlistBuddy -c "Add :${key} array" "$plist"
+              /usr/libexec/PlistBuddy -c "Add :${key}:0 string UIInterfaceOrientationPortrait" "$plist"
+              /usr/libexec/PlistBuddy -c "Add :${key}:1 string UIInterfaceOrientationLandscapeLeft" "$plist"
+              /usr/libexec/PlistBuddy -c "Add :${key}:2 string UIInterfaceOrientationLandscapeRight" "$plist"
+            done
+            /usr/libexec/PlistBuddy -c "Delete :NSAppTransportSecurity" "$plist" 2>/dev/null || true
+            /usr/libexec/PlistBuddy -c "Add :NSAppTransportSecurity dict" "$plist"
+            /usr/libexec/PlistBuddy -c "Add :NSAppTransportSecurity:NSAllowsArbitraryLoads bool true" "$plist"
+          done
+        env:
+          APPLE_DEVELOPMENT_TEAM: "ABCDE12345"
+
+      - name: 構建 iOS 應用與打包 IPA
+        shell: bash
+        env:
+          APP_VERSION: ${{ steps.ver.outputs.version }}
+        run: bash scripts/build-ios-unsigned.sh "$APP_VERSION"
+
+      - name: 上傳 IPA 產物
+        uses: actions/upload-artifact@v4
+        with:
+          name: HGhub-iOS-IPA
+          path: artifacts/*
+          if-no-files-found: error
+permissions:
+  contents: read

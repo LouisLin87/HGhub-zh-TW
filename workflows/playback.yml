@@ -1,0 +1,46 @@
+# 手動觸發，建置結果保存為附件；版本發佈由維護者另行操作。
+name: 手動播放回歸檢查
+
+on:
+  workflow_dispatch:
+    inputs:
+      scenarios:
+        description: 以逗號分隔的檢查項目（seek,legacy,stall,lifecycle,mms）
+        default: seek,legacy,stall,lifecycle,mms
+        required: true
+
+permissions:
+  contents: read
+
+jobs:
+  playback:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Install local media generator and headless browser
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ffmpeg
+          pnpm exec playwright-core install --with-deps chromium
+      - name: Run playback checks and collect diagnostics
+        env:
+          PLAYBACK_SCENARIOS: ${{ inputs.scenarios }}
+        run: pnpm test:playback --scenarios "$PLAYBACK_SCENARIOS" --output
+          test-results/playback-ci
+      - name: Upload diagnostics even when a check fails
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playback-diagnostics
+          path: test-results/
+          retention-days: 7
+          if-no-files-found: warn
